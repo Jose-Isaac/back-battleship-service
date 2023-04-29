@@ -2,8 +2,8 @@ package com.workshop.battleship.infrastructure.security.filter
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.workshop.battleship.domain.player.Credential
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.workshop.battleship.domain.player.Credential
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
