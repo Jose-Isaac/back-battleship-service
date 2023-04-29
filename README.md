@@ -8,7 +8,7 @@
 * [Sobre](#Sobre)
 * [Features](#Features)
 * [Pré-Requisitos](#Pré-Requisitos)
-* [Tecnologias](#tecnologias)
+* [Tecnologias](#Tecnologias)
 <!--te-->
 
 ### Sobre
