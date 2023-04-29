@@ -1,0 +1,15 @@
+version: "3.3"
+
+services:
+  db:
+    image: postgres:11.4
+    container_name: battleship-db
+    environment:
+      - POSTGRES_DB=battleship
+      - POSTGRES_PASSWORD=development
+      - POSTGRES_USER=development
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/rules.sql:/docker-entrypoint-iniydb.d/rules.sql
+    restart: always
