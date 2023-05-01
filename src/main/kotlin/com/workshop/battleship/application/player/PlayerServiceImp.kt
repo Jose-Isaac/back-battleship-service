@@ -38,4 +38,14 @@ class PlayerServiceImp(
         logger.info("END created a new player: ${newPlayer.username}")
         return newPlayer
     }
+
+    override fun getPlayer(username: String): Player {
+        val optional = playerRepository.findByUsername(username)
+
+        if (optional.isPresent) {
+            return optional.get()
+        }
+
+        throw Exception("Player not found")
+    }
 }
