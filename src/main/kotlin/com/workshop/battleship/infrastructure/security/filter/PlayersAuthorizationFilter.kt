@@ -24,7 +24,10 @@ class PlayersAuthorizationFilter() : OncePerRequestFilter() {
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        if (!request.servletPath.equals("/login") && !request.servletPath.equals("/token/refresh")) {
+        if (
+            request.servletPath != "/login" &&
+            request.servletPath != "/token/refresh"
+        ) {
             val authorizationHeader = request.getHeader(AUTHORIZATION)
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
