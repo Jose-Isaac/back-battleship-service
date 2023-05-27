@@ -83,10 +83,10 @@ class GameRoomServiceImp(
         gameRoomId: String,
         boardAttackId: String,
         attackingPlayerUsername: String,
-        coordinate: Coordinate
+        coordinate: Coordinate,
     ) {
         val gameRoom = gameRoomRepository.findById(
-            UUID.fromString(gameRoomId)
+            UUID.fromString(gameRoomId),
         )
 
         if (gameRoom.isEmpty) {
@@ -108,29 +108,36 @@ class GameRoomServiceImp(
         logger.info("has winner: $hasWinner")
 
         val gameRoomUpdated = if (hasWinner) {
-            gameRoomRepository.save(
-                gameRoom.get().copy(
-                    winner = attackingPlayerUsername
-                )
+            gameRoom.get().copy(
+                winner = attackingPlayerUsername,
             )
         } else {
             var turn = gameRoom.get().turn
-            gameRoomRepository.save(
-                gameRoom.get().copy(
-                    playerTurn = playerTurn,
-                    turn = ++turn
-                )
+            gameRoom.get().copy(
+                playerTurn = playerTurn,
+                turn = ++turn,
             )
         }
 
-        gameRoomUpdated.toVO(
+        gameRoomRepository.save(gameRoomUpdated)
+
+        sendAttackResponse(gameRoomUpdated)
+    }
+
+    private fun sendAttackResponse(gameRoom: GameRoom) {
+        val boardPlayerOne = boardService.getBoard(gameRoom.boardPlayerOne)
+        val boardPlayerTwo = boardService.getBoard(gameRoom.boardPlayerTwo)
+
+        val typeResponse = if (gameRoom.winner == null) ActivityType.ATTACK else ActivityType.HAS_WINNER
+
+        val response = gameRoom.toVO(
             boardPlayerOne,
-            boardPlayerTwo
-        ).toRepresentation(if (hasWinner) ActivityType.ATTACK else ActivityType.HAS_WINNER)
+            boardPlayerTwo,
+        ).toRepresentation(typeResponse)
 
         simpMessageTemplate.convertAndSend(
-            "/topic/gameroom/${gameRoom.gameRoomId}/response",
-            Json.encodeToString(response)
+            "/topic/gameroom/${gameRoom.id}/response",
+            Json.encodeToString(response),
         )
 
         logger.info("attack response: $response")

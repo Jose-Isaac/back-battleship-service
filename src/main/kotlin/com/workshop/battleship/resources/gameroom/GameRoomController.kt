@@ -1,6 +1,7 @@
 package com.workshop.battleship.resources.gameroom
 
 import com.workshop.battleship.domain.model.gameroom.GameRoomService
+import com.workshop.battleship.resources.gameroom.representation.AttackRepresentation
 import com.workshop.battleship.resources.gameroom.representation.InviteResponseRepresentation
 import com.workshop.battleship.resources.gameroom.representation.JoinRepresentation
 import org.slf4j.Logger
@@ -35,5 +36,19 @@ class GameRoomController(
     ) {
         logger.info("Join payload: $join")
         gameRoomService.join(join)
+    }
+
+    @MessageMapping("/attack")
+    fun attack(
+        @Payload attackPayload: AttackRepresentation,
+    ) {
+        logger.info("Attack payload: $attackPayload")
+
+        gameRoomService.attackMove(
+            attackPayload.gameRoomId,
+            attackPayload.boardAttackId,
+            attackPayload.attackingPlayer,
+            attackPayload.coordinate,
+        )
     }
 }

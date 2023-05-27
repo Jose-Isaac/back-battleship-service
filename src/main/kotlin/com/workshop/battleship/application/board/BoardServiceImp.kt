@@ -77,6 +77,10 @@ class BoardServiceImp(
         return allShipsAreSunk(board)
     }
 
+    override fun getBoard(boardId: UUID): BoardVO {
+        return boardRepository.findById(boardId).get().toVO()
+    }
+
     private fun populateInitialPlays(): MutableList<MutableList<Coordinate>> {
         // TODO create constant for number of line and column in board
         return MutableList(6) { axisX ->

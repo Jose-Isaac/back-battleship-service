@@ -12,4 +12,5 @@ interface BoardService {
         attackingPlayerUsername: String,
     ): String
     fun checkWinner(boardAttacked: UUID): Boolean
+    fun getBoard(boardId: UUID): BoardVO
 }
