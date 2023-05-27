@@ -1,5 +1,6 @@
 package com.workshop.battleship.domain.model.gameroom
 
+import com.workshop.battleship.domain.board.Coordinate
 import com.workshop.battleship.domain.gameroom.GameRoomVO
 import com.workshop.battleship.domain.gameroom.PendingInvitation
 import com.workshop.battleship.resources.gameroom.representation.JoinRepresentation
@@ -9,4 +10,10 @@ interface GameRoomService {
     fun removeInvitation(invitation: String)
     fun join(join: JoinRepresentation)
     fun createRoom(pendingInvitation: PendingInvitation, currentPlayer: String): GameRoomVO
+    fun attackMove(
+        gameRoomId: String,
+        boardAttackId: String,
+        attackingPlayerUsername: String,
+        coordinate: Coordinate,
+    )
 }

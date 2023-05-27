@@ -1,5 +1,6 @@
 package com.workshop.battleship.application.gameroom
 
+import com.workshop.battleship.domain.board.Coordinate
 import com.workshop.battleship.domain.gameroom.*
 import com.workshop.battleship.domain.model.board.BoardService
 import com.workshop.battleship.domain.model.gameroom.GameRoomService
@@ -76,5 +77,62 @@ class GameRoomServiceImp(
         )
         logger.info("END - created a new game room")
         return gameRoom.toVO(boardForPlayerOne, boardForPlayerTwo)
+    }
+
+    override fun attackMove(
+        gameRoomId: String,
+        boardAttackId: String,
+        attackingPlayerUsername: String,
+        coordinate: Coordinate
+    ) {
+        val gameRoom = gameRoomRepository.findById(
+            UUID.fromString(gameRoomId)
+        )
+
+        if (gameRoom.isEmpty) {
+            logger.warn("Game room not found")
+            throw Exception("Game room not found")
+            // TODO create not found exception
+        }
+
+        if (gameRoom.get().playerTurn != attackingPlayerUsername) {
+            logger.warn("This is not your turn play")
+            throw Exception("This is not your turn play")
+            // TODO create exception
+        }
+
+        val playerTurn = boardService.attackMove(boardAttackId, coordinate, attackingPlayerUsername)
+
+        val hasWinner = boardService.checkWinner(UUID.fromString(boardAttackId))
+
+        logger.info("has winner: $hasWinner")
+
+        val gameRoomUpdated = if (hasWinner) {
+            gameRoomRepository.save(
+                gameRoom.get().copy(
+                    winner = attackingPlayerUsername
+                )
+            )
+        } else {
+            var turn = gameRoom.get().turn
+            gameRoomRepository.save(
+                gameRoom.get().copy(
+                    playerTurn = playerTurn,
+                    turn = ++turn
+                )
+            )
+        }
+
+        gameRoomUpdated.toVO(
+            boardPlayerOne,
+            boardPlayerTwo
+        ).toRepresentation(if (hasWinner) ActivityType.ATTACK else ActivityType.HAS_WINNER)
+
+        simpMessageTemplate.convertAndSend(
+            "/topic/gameroom/${gameRoom.gameRoomId}/response",
+            Json.encodeToString(response)
+        )
+
+        logger.info("attack response: $response")
     }
 }

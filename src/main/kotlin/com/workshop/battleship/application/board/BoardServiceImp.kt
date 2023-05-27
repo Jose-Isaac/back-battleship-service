@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class BoardServiceImp(
@@ -33,6 +34,49 @@ class BoardServiceImp(
         return board.toVO()
     }
 
+    override fun attackMove(
+        boardAttackId: String,
+        coordinateAttack: Coordinate,
+        attackingPlayerUsername: String,
+    ): String {
+        val boardOptional = boardRepository.findById(
+            UUID.fromString(boardAttackId),
+        )
+
+        if (boardOptional.isEmpty) {
+            logger.warn("Board not found")
+            throw Exception("Board not found")
+            // TODO create not found exception
+        }
+
+        val boardAttack = boardOptional.get().toVO()
+
+        logger.info("START - player: $attackingPlayerUsername attacking board: $boardAttackId")
+
+        // TODO valid coordinate
+
+        var coordinate = boardAttack.plays[coordinateAttack.axisX][coordinateAttack.axisY]
+
+        coordinate = coordinate.copy(
+            gotHit = true,
+            wasHitBy = attackingPlayerUsername,
+        )
+
+        boardAttack.plays[coordinateAttack.axisX][coordinateAttack.axisY] = coordinate
+
+        boardRepository.save(
+            boardAttack.toEntity(),
+        )
+
+        return boardAttack.player
+    }
+
+    override fun checkWinner(boardAttacked: UUID): Boolean {
+        val board = boardRepository.findById(boardAttacked).get().toVO()
+
+        return allShipsAreSunk(board)
+    }
+
     private fun populateInitialPlays(): MutableList<MutableList<Coordinate>> {
         // TODO create constant for number of line and column in board
         return MutableList(6) { axisX ->
@@ -50,5 +94,13 @@ class BoardServiceImp(
                 isOccupied = true,
             )
         }
+    }
+
+    private fun allShipsAreSunk(board: BoardVO): Boolean {
+        board.plays.forEach { line ->
+            line.forEach { if (it.isOccupied && !it.gotHit) return false }
+        }
+
+        return true
     }
 }
