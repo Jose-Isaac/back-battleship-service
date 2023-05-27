@@ -3,9 +3,11 @@ package com.workshop.battleship.infrastructure.security.config
 import com.workshop.battleship.infrastructure.security.encodePassword
 import com.workshop.battleship.infrastructure.security.filter.PlayerAuthenticationFilter
 import com.workshop.battleship.infrastructure.security.filter.PlayersAuthorizationFilter
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -17,9 +19,11 @@ import org.springframework.web.cors.CorsConfiguration
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
+    private val configuration: AuthenticationConfiguration,
     private val userDetailsService: UserDetailsService,
 ) {
 
+    @Autowired
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
         auth
             .userDetailsService(userDetailsService)
@@ -58,7 +62,7 @@ class SecurityConfig(
             .cors()
             .configurationSource { corsConfiguration }
         http
-            .addFilter(PlayerAuthenticationFilter())
+            .addFilter(PlayerAuthenticationFilter(authenticationManager = configuration.authenticationManager))
         http
             .addFilterBefore(PlayersAuthorizationFilter(), UsernamePasswordAuthenticationFilter::class.java)
 
